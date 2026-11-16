@@ -23,7 +23,6 @@
     background: var(--bg);
   }
   body {
-    background: var(--bg);
     color: var(--ink);
     font-family: "Nanum Myeongjo", "Noto Serif KR", "AppleMyungjo", Georgia, serif;
   }
@@ -43,6 +42,17 @@
     pointer-events: none;
     background: radial-gradient(ellipse at center, transparent 50%, rgba(120, 80, 50, .18) 100%);
     z-index: -1;
+  }
+  /* 고정 배경: 스크롤해도 움직이지 않음 (iOS에서도 동작하도록 fixed 레이어로 구현) */
+  .bg {
+    position: fixed; inset: 0;
+    z-index: -2;
+    pointer-events: none;
+    background: var(--bg) url("images/bg.jpg") center center / cover no-repeat;
+  }
+  /* 세로 화면(모바일): 비율 유지한 채 화면을 채우고 왼쪽을 잘라 오른쪽 부분을 보여줌 */
+  @media (orientation: portrait) {
+    .bg { background-position: right center; }
   }
 
   /* 한 화면에 한 장 */
@@ -138,7 +148,7 @@
   .intro {
     position: fixed; inset: 0;
     z-index: 200;
-    background: var(--bg);
+    background: transparent;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
     gap: 40px;
@@ -170,6 +180,8 @@
     50% { box-shadow: 0 0 0 14px rgba(179,102,74,0); }
   }
   body.locked { overflow: hidden; }
+  main { transition: opacity 1.2s ease .3s; }
+  body.locked main { opacity: 0; visibility: hidden; }
   body.locked .mini { opacity: 0; pointer-events: none; }
 
   /* 확대 보기 */
@@ -202,6 +214,8 @@
 </style>
 </head>
 <body class="locked">
+
+<div class="bg" aria-hidden="true"></div>
 
 <div class="intro" id="intro" role="button" tabindex="0" aria-label="음악 재생하고 들어가기">
   <img src="images/main.jpg" alt="수묵화">
