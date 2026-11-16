@@ -279,7 +279,7 @@ function update() {
   const vh = window.innerHeight;
   const mid = vh / 2;
   for (const fig of figures) {
-    const r = fig.getBoundingClientRect();
+    const r = fig.parentElement.getBoundingClientRect();   /* 변형 영향 없는 섹션 기준으로 측정 */
     const d = (r.top + r.height / 2) - mid;
     const t = Math.max(0, 1 - Math.abs(d) / (vh * 0.55));
     const e = t * t * (3 - 2 * t);            /* 부드러운 곡선 */
