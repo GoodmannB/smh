@@ -215,19 +215,18 @@
   }
   .lyric {
     position: fixed;
-    top: calc(22px + env(safe-area-inset-top));
+    top: 60px;                       /* 실제 위치는 스크립트가 그림 위 여백의 가운데로 계산 */
     left: 50%;
-    transform: translateX(-50%);
-    width: min(92vw, 760px);
+    transform: translate(-50%, -50%);
+    width: max-content;
+    max-width: 96vw;
+    white-space: nowrap;              /* 항상 한 줄: 크기는 가장 긴 줄이 화면 폭에 맞도록 계산 */
     text-align: center;
     font-family: "KyoboHand", "Nanum Myeongjo", serif;
-    font-size: clamp(20px, 5.6vw, 32px);
-    line-height: 1.35;
-    letter-spacing: .01em;
+    font-size: 20px;
+    line-height: 1.3;
     color: #3a2c22;
     text-shadow: 0 0 6px rgba(250, 245, 238, .95), 0 0 14px rgba(250, 245, 238, .9), 0 0 2px rgba(250, 245, 238, 1);
-    text-wrap: balance;
-    word-break: keep-all;
     pointer-events: none;
     z-index: 55;
     opacity: 0;
@@ -373,7 +372,7 @@ IMAGES.forEach((item, i) => {
   const img = new Image();
   img.src = item.src;
   img.alt = item.label;
-  img.loading = i < 2 ? 'eager' : 'lazy';
+  img.loading = 'eager';                         /* 자막 위치 계산에 모든 그림 크기가 필요 */
   img.decoding = 'async';
   img.addEventListener('click', () => openLightbox(item.src));
   img.addEventListener('contextmenu', e => e.preventDefault());
@@ -519,19 +518,19 @@ bar.addEventListener('pointercancel', endDrag);
 
 /* 가사 자막: (분:초:1/100초 ~ 분:초:1/100초) 가사 형식. 빈 줄은 무시됨 */
 const LYRICS = `
-(00:18:00 ~ 00:23:00) 기억 속을 거닐면 소란했던 날에
+(00:17:00 ~ 00:23:00) 기억 속을 거닐면 소란했던 날에
 (00:24:00 ~ 00:30:00) 내 뒤를 졸졸 따르던 작은 발걸음 하나
-(00:31:00 ~ 00:38:00) 여전히 내 눈에는 서툴고 어리기만 한데
-(00:38:50 ~ 00:45:00) 어느새 넓어진 어깨가 낯설어 미소만 흘린다
+(00:31:00 ~ 00:37:50) 여전히 내 눈에는 서툴고 어리기만 한데
+(00:38:00 ~ 00:45:00) 어느새 넓어진 어깨가 낯설어 미소만 흘린다
 
-(00:46:00 ~ 00:52:00) 해준 것 없는 날들에 넌 늘 웃어주었고
-(00:53:00 ~ 00:59:00) 과분하게 건네준 평생의 기억들만 남아
-(01:00:00 ~ 01:06:00) 미안함이 앞서서 건네지 못한 말은 등 뒤로
-(01:07:00 ~ 01:12:00) 잘 자라주어 고맙구나
+(00:45:50 ~ 00:51:50) 해준 것 없는 날들에 넌 늘 웃어주었고
+(00:52:00 ~ 00:58:50) 과분하게 건네준 평생의 기억들만 남아
+(00:59:00 ~ 01:06:00) 미안함이 앞서서 건네지 못한 말은 등 뒤로
+(01:06:50 ~ 01:12:00) 잘 자라주어 고맙구나
 
 (01:13:00 ~ 01:19:00) 조용하고 잔잔하던 오랜 우리의 풍경
-(01:19:00 ~ 01:27:00) 빛 바랜 수묵화 같던 적막한 그림 위로
-(01:27:50 ~ 01:34:00) 우연처럼 그려진 예쁜 가지 하나에
+(01:19:50 ~ 01:26:50) 빛 바랜 수묵화 같던 적막한 그림 위로
+(01:27:00 ~ 01:34:00) 우연처럼 그려진 예쁜 가지 하나에
 (01:34:50 ~ 01:41:00) 그때의 해맑던 미소를 다시 보게 되었구나
 
 (01:41:50 ~ 01:49:00) 그대 작은 손길 하나에 번지는 알록달록 오색 빛
@@ -539,25 +538,25 @@ const LYRICS = `
 (01:55:50 ~ 02:02:00) 고맙소, 서툰 우리에게 찾아와 준 그대여
 (02:02:50 ~ 02:10:00) 올바른 향기로 물들여갈 두 사람의 시작
 
-(02:14:00 ~ 02:21:00) 이제는 한 걸음 뒤에서 너를 바라본다
-(02:21:50 ~ 02:27:00) 눈부시게 자라난 너의 뒷모습
-(02:27:50 ~ 02:34:50) 조금은 더 어른이 된 나무가 되어 줄게
-(02:35:00 ~ 02:42:00) 언제든 쉴 수 있는 그늘을 넓혀둘 테니
+(02:13:50 ~ 02:20:50) 이제는 한 걸음 뒤에서 너를 바라본다
+(02:21:00 ~ 02:27:00) 눈부시게 자라난 너의 뒷모습
+(02:27:50 ~ 02:34:00) 조금은 더 어른이 된 나무가 되어 줄게
+(02:34:50 ~ 02:41:50) 언제든 쉴 수 있는 그늘을 넓혀둘 테니
 
-(02:42:50 ~ 02:49:00) 그대 작은 손길 하나에 번지는 알록달록 오색 빛
-(02:49:50 ~ 02:56:00) 어두운 여백을 채우는 우아한 그대 춤사위
-(02:56:50 ~ 03:02:00) 고맙소, 서툰 우리에게 찾아와 준 그대여
-(03:02:50 ~ 03:10:00) 어여쁜 가지들로 채워갈 두 사람의 시작
+(02:42:00 ~ 02:49:00) 그대 작은 손길 하나에 번지는 알록달록 오색 빛
+(02:49:50 ~ 02:55:50) 어두운 여백을 채우는 우아한 그대 춤사위
+(02:56:00 ~ 03:02:00) 고맙소, 서툰 우리에게 찾아와 준 그대여
+(03:02:50 ~ 03:09:50) 어여쁜 가지들로 채워갈 두 사람의 시작
 
-(03:10:50 ~ 03:17:00) 디딜 발자욱 마다 예쁜 색으로 가득하길
-(03:17:50 ~ 03:24:00) 바람에 스러지지 않는 향기로 채워 가길
-(03:24:50 ~ 03:31:00) 언제나 두사람을 기도 하겠소
-(03:31:50 ~ 03:41:00) 언제나 그대들과 함께 하겠소
+(03:10:00 ~ 03:16:00) 디딜 발자욱 마다 예쁜 색으로 가득하길
+(03:16:50 ~ 03:23:00) 바람에 스러지지 않는 향기로 채워 가길
+(03:23:50 ~ 03:30:50) 언제나 두사람을 기도 하겠소
+(03:31:00 ~ 03:41:00) 언제나 그대들과 함께 하겠소
 
-(04:10:00 ~ 04:17:00) 가끔 거친 바람 불어와 그대를 흔들 때도 있지만
-(04:17:50 ~ 04:24:00) 마주 잡은 두 손에 붓으로 채워갈 한 폭의 채색화
-(04:24:50 ~ 04:31:00) 언제나, 오늘 그대들을 꼭 기억하길 바라오
-(04:31:50 ~ 04:42:00) 새로운 가지를 향기로 그릴 두 사람의 시작
+(04:10:00 ~ 04:16:50) 가끔 거친 바람 불어와 그대를 흔들 때도 있지만
+(04:17:00 ~ 04:23:50) 마주 잡은 두 손에 붓으로 채워갈 한 폭의 채색화
+(04:24:00 ~ 04:30:50) 언제나, 오늘 그대들을 꼭 기억하길 바라오
+(04:31:00 ~ 04:42:00) 새로운 가지를 향기로 그릴 두 사람의 시작
 `;
 const cues = [...LYRICS.matchAll(/\((\d+):(\d+):(\d+)\s*~\s*(\d+):(\d+):(\d+)\)\s*(.+)/g)].map(m => ({
   s: +m[1] * 60 + +m[2] + +m[3] / 100,
@@ -565,6 +564,32 @@ const cues = [...LYRICS.matchAll(/\((\d+):(\d+):(\d+)\s*~\s*(\d+):(\d+):(\d+)\)\
   t: m[7].trim()
 }));
 const lyricEl = document.getElementById('lyric');
+
+/* 자막 크기·위치 계산
+   크기: 가장 긴 가사 줄이 화면 폭(여백 제외)에 꽉 차는 최대 크기, 모든 줄 동일
+   위치: 그림 위 여백 중 가장 좁은 곳의 세로 가운데 → 어떤 그림 위에서도 겹치지 않음 */
+const LYRIC_MAX = 38, SIDE = 0.06;
+const measureCtx = document.createElement('canvas').getContext('2d');
+function layoutLyric() {
+  const vw = window.innerWidth;
+  const avail = Math.min(vw * (1 - SIDE * 2), 900);
+  measureCtx.font = '100px KyoboHand';
+  const widest = Math.max(...cues.map(c => measureCtx.measureText(c.t).width));
+  let size = widest ? 100 * avail / widest : 20;
+  let gap = Infinity;
+  document.querySelectorAll('.slide').forEach(sec => {
+    const img = sec.querySelector('img');
+    if (img && img.naturalWidth && img.offsetHeight) gap = Math.min(gap, (sec.clientHeight - img.offsetHeight) / 2);
+  });
+  if (!isFinite(gap)) gap = window.innerHeight * 0.12;
+  size = Math.min(size, LYRIC_MAX, gap * 0.6);   /* 여백보다 커지지 않게 */
+  lyricEl.style.fontSize = size.toFixed(1) + 'px';
+  lyricEl.style.top = (gap / 2).toFixed(1) + 'px';
+}
+document.fonts.load('100px KyoboHand').then(layoutLyric);
+window.addEventListener('resize', layoutLyric);
+document.querySelectorAll('.slide img').forEach(img => img.addEventListener('load', layoutLyric));
+layoutLyric();
 let curCue = -1, swapTimer = null;
 function syncLyric() {
   const t = audio.currentTime;
@@ -609,6 +634,7 @@ function enter() {
   intro.classList.add('hide');
   document.body.classList.remove('locked');
   window.scrollTo(0, 0);
+  requestAnimationFrame(layoutLyric);
   requestUpdate();
 }
 intro.addEventListener('click', enter);
