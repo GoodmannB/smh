@@ -48,7 +48,7 @@
     position: fixed; inset: 0;
     z-index: -2;
     pointer-events: none;
-    background: var(--bg) url("images/bg.jpg") center center / cover no-repeat;
+    background: var(--bg) center center / cover no-repeat;   /* 이미지는 스크립트가 버전 번호와 함께 지정 */
   }
   /* 세로 화면(모바일): 비율 유지한 채 화면을 채우고 왼쪽을 잘라 오른쪽 부분을 보여줌 */
   @media (orientation: portrait) {
@@ -208,11 +208,7 @@
 
 
   /* 가사 자막: 화면 상단 고정 */
-  @font-face {
-    font-family: "KyoboHand";
-    src: url("fonts/kyobo-lyrics.woff") format("woff");
-    font-display: swap;
-  }
+  /* 폰트는 스크립트가 버전 번호와 함께 불러옴 */
   .lyric {
     position: fixed;
     top: 60px;                       /* 실제 위치는 스크립트가 그림 위 여백의 가운데로 계산 */
@@ -305,11 +301,46 @@
 </style>
 </head>
 <body class="locked">
+<script>
+/* ===== 버전 =====
+   그림·음원·배경·폰트 등 파일을 바꿔 올릴 때마다 이 숫자와 version.json의 숫자를 똑같이 1씩 올림.
+   그러면 모든 기기가 저장된 옛 파일 대신 새 파일을 받음. */
+const VERSION = 1;
+const V = path => path + '?v=' + VERSION;
+
+/* 열린 페이지가 옛 버전이면 최신 페이지로 다시 열기 (QR 주소 그대로 들어와도 동작) */
+function checkVersion() {
+  fetch('version.json?t=' + Date.now(), { cache: 'no-store' })
+    .then(r => r.ok ? r.json() : null)
+    .then(d => {
+      const latest = d && Number(d.version);
+      if (!latest || latest <= VERSION) return;
+      const u = new URL(location.href);
+      if (u.searchParams.get('v') === String(latest)) return;   /* 이미 시도한 주소면 멈춤: 무한 새로고침 방지 */
+      u.searchParams.set('v', latest);
+      location.replace(u.toString());
+    })
+    .catch(() => {});                                            /* 확인 실패 시 현재 페이지 그대로 사용 */
+}
+checkVersion();
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkVersion(); });
+window.addEventListener('pageshow', e => { if (e.persisted) checkVersion(); });
+
+/* 최신 페이지가 열렸으면 주소창의 ?v= 표시는 지움 */
+(function cleanUrl() {
+  const u = new URL(location.href);
+  const v = Number(u.searchParams.get('v'));
+  if (v && v <= VERSION && history.replaceState) {
+    u.searchParams.delete('v');
+    history.replaceState(history.state, '', u.pathname + (u.search || '') + u.hash);
+  }
+})();
+</script>
 
 <div class="bg" aria-hidden="true"></div>
 
 <div class="intro" id="intro" role="button" tabindex="0" aria-label="음악 재생하고 들어가기">
-  <img src="images/main.jpg" alt="수묵화">
+  <img id="introImg" alt="수묵화">
   <div class="cue"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z"/></svg></div>
 </div>
 
@@ -338,9 +369,14 @@
 
 <div class="lightbox" id="lightbox"><button aria-label="닫기">×</button><img alt=""></div>
 
-<audio id="audio" src="song.mp3?v=1" preload="metadata" controlslist="nodownload"></audio>
+<audio id="audio" preload="metadata" controlslist="nodownload"></audio>
 
 <script>
+/* 버전 번호를 붙여 고정 파일 지정 */
+document.getElementById('introImg').src = V('images/main.jpg');
+document.getElementById('audio').src = V('song.mp3');
+document.querySelector('.bg').style.backgroundImage = `url("${V('images/bg.jpg')}")`;
+
 /* ===== 여기만 고치면 됩니다 =====
    순서대로 한 화면에 한 장씩 표시됩니다.
    zoom: true 는 글자가 작은 이미지에 확대 아이콘 표시 (탭하면 전체 화면 확대는 모든 이미지 공통) */
@@ -370,11 +406,11 @@ IMAGES.forEach((item, i) => {
   const fig = document.createElement('figure');
   if (item.zoom) fig.className = 'zoom';
   const img = new Image();
-  img.src = item.src;
+  img.src = V(item.src);
   img.alt = item.label;
   img.loading = 'eager';                         /* 자막 위치 계산에 모든 그림 크기가 필요 */
   img.decoding = 'async';
-  img.addEventListener('click', () => openLightbox(item.src));
+  img.addEventListener('click', () => openLightbox(V(item.src)));
   img.addEventListener('contextmenu', e => e.preventDefault());
   img.addEventListener('load', update);
   fig.appendChild(img);
@@ -588,7 +624,9 @@ function layoutLyric() {
   const spacing = Math.max(10, size * 0.6);        /* 그림 윗변과 자막 사이의 작은 여백 */
   lyricEl.style.top = Math.max(lineH / 2 + 8, gap - spacing - lineH / 2).toFixed(1) + 'px';
 }
-document.fonts.load('100px KyoboHand').then(layoutLyric);
+const lyricFont = new FontFace('KyoboHand', `url(${V('fonts/kyobo-lyrics.woff')}) format("woff")`, { display: 'swap' });
+document.fonts.add(lyricFont);
+lyricFont.load().then(layoutLyric).catch(() => {});
 window.addEventListener('resize', layoutLyric);
 document.querySelectorAll('.slide img').forEach(img => img.addEventListener('load', layoutLyric));
 layoutLyric();
@@ -618,7 +656,7 @@ if ('mediaSession' in navigator) {
   navigator.mediaSession.metadata = new MediaMetadata({
     title: SONG_TITLE,
     artist: SONG_ARTIST,
-    artwork: [{ src: 'images/main.jpg', sizes: '1600x1600', type: 'image/jpeg' }]
+    artwork: [{ src: V('images/main.jpg'), sizes: '1600x1600', type: 'image/jpeg' }]
   });
   const set = (a, h) => { try { navigator.mediaSession.setActionHandler(a, h); } catch (e) {} };
   set('play',  () => audio.play());
