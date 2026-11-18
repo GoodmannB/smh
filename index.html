@@ -35,7 +35,11 @@
   /* 한지 질감 */
   body::before {
     content: "";
-    position: fixed; inset: 0;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 100vh;                    /* 아이폰 주소창이 접히고 펴질 때 화면 높이가 바뀌어도 */
+    height: 100lvh;                   /* 배경은 가장 큰 화면 높이에 고정 → 커졌다 작아졌다 하지 않음 */
+    height: var(--stage-h, 100lvh);
     pointer-events: none;
     opacity: .22;
     mix-blend-mode: multiply;
@@ -44,14 +48,22 @@
   }
   body::after {
     content: "";
-    position: fixed; inset: 0;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 100vh;                    /* 아이폰 주소창이 접히고 펴질 때 화면 높이가 바뀌어도 */
+    height: 100lvh;                   /* 배경은 가장 큰 화면 높이에 고정 → 커졌다 작아졌다 하지 않음 */
+    height: var(--stage-h, 100lvh);
     pointer-events: none;
     background: radial-gradient(ellipse at center, transparent 50%, rgba(120, 80, 50, .18) 100%);
     z-index: -1;
   }
   /* 고정 배경: 스크롤해도 움직이지 않음 (iOS에서도 동작하도록 fixed 레이어로 구현) */
   .bg {
-    position: fixed; inset: 0;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 100vh;                    /* 아이폰 주소창이 접히고 펴질 때 화면 높이가 바뀌어도 */
+    height: 100lvh;                   /* 배경은 가장 큰 화면 높이에 고정 → 커졌다 작아졌다 하지 않음 */
+    height: var(--stage-h, 100lvh);
     z-index: -2;
     pointer-events: none;
     background: var(--bg) center center / cover no-repeat;   /* 이미지는 스크립트가 버전 번호와 함께 지정 */
@@ -358,7 +370,7 @@
 /* ===== 버전 =====
    그림·음원·배경·폰트 등 파일을 바꿔 올릴 때마다 이 숫자와 version.json의 숫자를 똑같이 1씩 올림.
    그러면 모든 기기가 저장된 옛 파일 대신 새 파일을 받음. */
-const VERSION = 13;
+const VERSION = 14;
 const V = path => path + '?v=' + VERSION;
 
 /* 열린 페이지가 옛 버전이면 최신 페이지로 다시 열기 (QR 주소 그대로 들어와도 동작) */
@@ -435,6 +447,24 @@ document.getElementById('introImg').src = V('images/main.jpg');
 document.getElementById('homeImg').src = V('icons/seal-home.png');
 document.getElementById('audio').src = V('song.mp3');
 document.querySelector('.bg').style.backgroundImage = `url("${V('images/bg.jpg')}")`;
+/* 배경 높이 고정: 지금까지 본 가장 큰 화면 높이를 기억해 그 크기로 고정.
+   화면을 가로·세로로 돌려 폭이 바뀔 때만 다시 계산 */
+(function lockStage() {
+  let w = window.innerWidth, h = 0;
+  const probe = document.createElement('div');                  /* 브라우저가 아는 '가장 큰 화면 높이'(100lvh) 측정용 */
+  probe.style.cssText = 'position:fixed;top:0;left:0;width:0;height:100vh;height:100lvh;visibility:hidden;pointer-events:none';
+  document.body.appendChild(probe);
+  function apply() {
+    const vw = window.innerWidth, vh = Math.max(window.innerHeight, document.documentElement.clientHeight, probe.offsetHeight);
+    if (!vw || !vh) return;
+    if (vw !== w) { w = vw; h = 0; }
+    if (vh > h) { h = vh; document.documentElement.style.setProperty('--stage-h', h + 'px'); }
+  }
+  apply();
+  window.addEventListener('resize', apply);
+  window.addEventListener('orientationchange', () => setTimeout(apply, 300));
+})();
+
 
 /* ===== 여기만 고치면 됩니다 =====
    순서대로 한 화면에 한 장씩 표시됩니다.
