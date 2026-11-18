@@ -173,6 +173,24 @@
     pointer-events: none;
     transition: opacity .22s ease, transform .3s cubic-bezier(.2,.8,.2,1);
   }
+  /* 음악 불러오는 중 표시: 원 테두리·재생 버튼 둘레에 도는 호 */
+  .player .spin {
+    position: absolute;
+    border-radius: 50%;
+    border: 2.5px solid transparent;
+    border-top-color: var(--accent);
+    border-right-color: rgba(179, 102, 74, .35);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s ease;
+    animation: spin .9s linear infinite;
+  }
+  .player .compact .spin { inset: 1px; }
+  .player .pp { position: relative; }
+  .player .pp .spin { inset: -5px; }
+  .player.loading .spin { opacity: 1; }
+  .player.loading .compact .ring .prog { opacity: 0; }
+  @keyframes spin { to { transform: rotate(360deg); } }
   .player.open .compact {
     opacity: 0; transform: scale(.6); pointer-events: none;
     transition: opacity .18s ease, transform .22s ease;
@@ -325,7 +343,7 @@
 /* ===== 버전 =====
    그림·음원·배경·폰트 등 파일을 바꿔 올릴 때마다 이 숫자와 version.json의 숫자를 똑같이 1씩 올림.
    그러면 모든 기기가 저장된 옛 파일 대신 새 파일을 받음. */
-const VERSION = 9;
+const VERSION = 10;
 const V = path => path + '?v=' + VERSION;
 
 /* 열린 페이지가 옛 버전이면 최신 페이지로 다시 열기 (QR 주소 그대로 들어와도 동작) */
@@ -374,11 +392,13 @@ window.addEventListener('pageshow', e => { if (e.persisted) checkVersion(); });
       <circle class="track" cx="26" cy="26" r="23"/>
       <circle class="prog" id="prog" cx="26" cy="26" r="23"/>
     </svg>
+    <span class="spin" aria-hidden="true"></span>
     <svg class="icon i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z"/></svg>
     <svg class="icon i-pause" viewBox="0 0 24 24"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>
   </button>
   <div class="full">
     <button class="pp" id="pp" aria-label="재생">
+      <span class="spin" aria-hidden="true"></span>
       <svg class="icon i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z"/></svg>
       <svg class="icon i-pause" viewBox="0 0 24 24"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>
     </button>
@@ -517,9 +537,28 @@ document.addEventListener('pointerdown', e => {   /* 재생바 바깥을 누르�
   if (player.classList.contains('open') && !player.contains(e.target)) collapse();
 });
 
+/* 음악 불러오는 중 표시: 재생을 눌렀는데 아직 소리가 안 나는 동안(버퍼링·구간 이동 포함)
+   0.25초 이상 걸릴 때만 표시해서 바로 재생될 때 깜빡이지 않게 함 */
+let loadTimer = null;
+function setLoading(on) {
+  clearTimeout(loadTimer);
+  if (on) loadTimer = setTimeout(() => player.classList.add('loading'), 250);
+  else player.classList.remove('loading');
+}
+function requestPlay() {
+  setLoading(true);
+  audio.play().catch(() => setLoading(false));
+}
+audio.addEventListener('waiting', () => setLoading(true));
+audio.addEventListener('seeking', () => { if (!audio.paused) setLoading(true); });
+audio.addEventListener('playing', () => setLoading(false));
+audio.addEventListener('pause',   () => setLoading(false));
+audio.addEventListener('error',   () => setLoading(false));
+audio.addEventListener('seeked',  () => { if (audio.paused) setLoading(false); });
+
 /* 재생·일시정지 */
 pp.addEventListener('click', () => {
-  if (audio.paused) audio.play().catch(() => {}); else audio.pause();
+  if (audio.paused) requestPlay(); else audio.pause();
   armCollapse();
 });
 audio.addEventListener('play',  () => { player.classList.add('playing');    pp.setAttribute('aria-label', '일시정지'); });
@@ -671,7 +710,7 @@ if ('mediaSession' in navigator) {
     artwork: [{ src: V('images/main.jpg'), sizes: '1600x1600', type: 'image/jpeg' }]
   });
   const set = (a, h) => { try { navigator.mediaSession.setActionHandler(a, h); } catch (e) {} };
-  set('play',  () => audio.play());
+  set('play',  () => requestPlay());
   set('pause', () => audio.pause());
   set('seekto', d => { if (d.seekTime != null) audio.currentTime = d.seekTime; });
   set('seekbackward', d => { audio.currentTime = Math.max(0, audio.currentTime - (d.seekOffset || 10)); });
@@ -682,7 +721,7 @@ if ('mediaSession' in navigator) {
 const intro = document.getElementById('intro');
 function enter() {
   if (intro.classList.contains('hide')) return;
-  audio.play().catch(() => {});
+  requestPlay();
   intro.classList.add('hide');
   document.body.classList.remove('locked');
   window.scrollTo(0, 0);
