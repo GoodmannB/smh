@@ -358,7 +358,7 @@
 /* ===== 버전 =====
    그림·음원·배경·폰트 등 파일을 바꿔 올릴 때마다 이 숫자와 version.json의 숫자를 똑같이 1씩 올림.
    그러면 모든 기기가 저장된 옛 파일 대신 새 파일을 받음. */
-const VERSION = 12;
+const VERSION = 13;
 const V = path => path + '?v=' + VERSION;
 
 /* 열린 페이지가 옛 버전이면 최신 페이지로 다시 열기 (QR 주소 그대로 들어와도 동작) */
@@ -368,6 +368,7 @@ function checkVersion() {
     .then(d => {
       const latest = d && Number(d.version);
       if (!latest || latest <= VERSION) return;
+      if (!document.body.classList.contains('locked')) return;   /* 이미 들어와 감상 중이면 끊지 않음: 다음에 열 때 갱신 */
       const u = new URL(location.href);
       if (u.searchParams.get('v') === String(latest)) return;   /* 이미 시도한 주소면 멈춤: 무한 새로고침 방지 */
       u.searchParams.set('v', latest);
@@ -512,10 +513,26 @@ const lb = document.getElementById('lightbox');
 function openLightbox(src) {
   lb.querySelector('img').src = src;
   lb.classList.add('open');
+  document.documentElement.style.overflow = 'hidden';
   document.body.style.overflow = 'hidden';
+  try { history.pushState({ lightbox: true }, ''); } catch (e) {}   /* 뒤로 가기를 누르면 페이지를 떠나지 않고 확대 보기만 닫힘 */
 }
-lb.addEventListener('click', e => {
-  if (e.target.tagName !== 'IMG') { lb.classList.remove('open'); document.body.style.overflow = ''; }
+function hideLightbox() {
+  lb.classList.remove('open');
+  document.documentElement.style.overflow = '';
+  document.body.style.overflow = '';
+}
+function closeLightbox() {
+  if (!lb.classList.contains('open')) return;
+  if (history.state && history.state.lightbox) history.back();       /* popstate에서 닫힘 */
+  else hideLightbox();
+}
+window.addEventListener('popstate', () => { if (lb.classList.contains('open')) hideLightbox(); });
+lb.addEventListener('click', e => { if (e.target.tagName !== 'IMG') closeLightbox(); });
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (lb.classList.contains('open')) closeLightbox();
+  else if (player.classList.contains('open')) collapse();
 });
 
 /* 플레이어 */
@@ -685,6 +702,7 @@ const LYRIC_MAX = 38, SIDE = 0.06;
 const measureCtx = document.createElement('canvas').getContext('2d');
 function layoutLyric() {
   const vw = window.innerWidth;
+  if (!vw || !window.innerHeight) return;
   const avail = Math.min(vw * (1 - SIDE * 2), 900);
   measureCtx.font = '100px KyoboHand';
   const widest = Math.max(...cues.map(c => measureCtx.measureText(c.t).width));
@@ -767,7 +785,7 @@ intro.addEventListener('click', enter);
 /* 좌측 상단 도장: 처음 화면(시작 화면)으로 돌아가기. 음악은 멈추고 처음으로 되돌림 */
 function goHome(e) {
   if (e) e.preventDefault();
-  lb.classList.remove('open'); document.body.style.overflow = '';
+  closeLightbox();
   dragging = false; collapse();
   audio.pause(); audio.currentTime = 0;
   render(0); cur.textContent = fmt(0);
