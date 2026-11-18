@@ -86,7 +86,7 @@
     max-height: 76svh;
     width: auto;
     height: auto;
-    border-radius: 4px;
+    border-radius: 0;                 /* 그림의 검은 테두리가 잘리지 않도록 모서리 둥글림 없음 */
     box-shadow: var(--shadow);
     background: var(--paper);
     cursor: zoom-in;
@@ -268,7 +268,7 @@
   .intro img {
     width: min(86vw, 62vh, 520px);
     height: auto;
-    border-radius: 4px;
+    border-radius: 0;                 /* 그림의 검은 테두리가 잘리지 않도록 모서리 둥글림 없음 */
     box-shadow: var(--shadow);
     animation: rise 1.4s ease both;
   }
@@ -325,7 +325,7 @@
 /* ===== 버전 =====
    그림·음원·배경·폰트 등 파일을 바꿔 올릴 때마다 이 숫자와 version.json의 숫자를 똑같이 1씩 올림.
    그러면 모든 기기가 저장된 옛 파일 대신 새 파일을 받음. */
-const VERSION = 5;
+const VERSION = 6;
 const V = path => path + '?v=' + VERSION;
 
 /* 열린 페이지가 옛 버전이면 최신 페이지로 다시 열기 (QR 주소 그대로 들어와도 동작) */
