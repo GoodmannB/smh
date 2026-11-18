@@ -325,7 +325,7 @@
 /* ===== 버전 =====
    그림·음원·배경·폰트 등 파일을 바꿔 올릴 때마다 이 숫자와 version.json의 숫자를 똑같이 1씩 올림.
    그러면 모든 기기가 저장된 옛 파일 대신 새 파일을 받음. */
-const VERSION = 8;
+const VERSION = 9;
 const V = path => path + '?v=' + VERSION;
 
 /* 열린 페이지가 옛 버전이면 최신 페이지로 다시 열기 (QR 주소 그대로 들어와도 동작) */
@@ -524,7 +524,7 @@ pp.addEventListener('click', () => {
 });
 audio.addEventListener('play',  () => { player.classList.add('playing');    pp.setAttribute('aria-label', '일시정지'); });
 audio.addEventListener('pause', () => { player.classList.remove('playing'); pp.setAttribute('aria-label', '재생'); });
-audio.addEventListener('ended', () => { audio.currentTime = 0; });
+audio.loop = true;                       /* 일시정지하거나 페이지를 닫기 전까지 반복 재생 (잠금화면·백그라운드에서도 동작) */
 audio.addEventListener('loadedmetadata', () => { dur.textContent = fmt(audio.duration); });
 
 function render(p) {
