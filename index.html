@@ -325,7 +325,7 @@
 /* ===== 버전 =====
    그림·음원·배경·폰트 등 파일을 바꿔 올릴 때마다 이 숫자와 version.json의 숫자를 똑같이 1씩 올림.
    그러면 모든 기기가 저장된 옛 파일 대신 새 파일을 받음. */
-const VERSION = 4;
+const VERSION = 5;
 const V = path => path + '?v=' + VERSION;
 
 /* 열린 페이지가 옛 버전이면 최신 페이지로 다시 열기 (QR 주소 그대로 들어와도 동작) */
@@ -401,13 +401,13 @@ document.querySelector('.bg').style.backgroundImage = `url("${V('images/bg.jpg')
    순서대로 한 화면에 한 장씩 표시됩니다.
    zoom: true 는 글자가 작은 이미지에 확대 아이콘 표시 (탭하면 전체 화면 확대는 모든 이미지 공통) */
 const IMAGES = [
-  { src: 'images/0.jpg',      label: '그림 0' },
   { src: 'images/1.jpg',      label: '그림 1' },
   { src: 'images/2.jpg',      label: '그림 2' },
   { src: 'images/3.jpg',      label: '그림 3' },
   { src: 'images/4.jpg',      label: '그림 4' },
   { src: 'images/5.jpg',      label: '그림 5' },
   { src: 'images/6.jpg',      label: '그림 6' },
+  { src: 'images/7.jpg',      label: '그림 7' },
   { src: 'images/lyrics.jpg', label: '가사', zoom: true },
   { src: 'images/credit.jpg', label: '크레딧' },
   { src: 'images/end.jpg',    label: '맺음' },
