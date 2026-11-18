@@ -358,7 +358,7 @@
 /* ===== 버전 =====
    그림·음원·배경·폰트 등 파일을 바꿔 올릴 때마다 이 숫자와 version.json의 숫자를 똑같이 1씩 올림.
    그러면 모든 기기가 저장된 옛 파일 대신 새 파일을 받음. */
-const VERSION = 11;
+const VERSION = 12;
 const V = path => path + '?v=' + VERSION;
 
 /* 열린 페이지가 옛 버전이면 최신 페이지로 다시 열기 (QR 주소 그대로 들어와도 동작) */
@@ -572,7 +572,15 @@ audio.addEventListener('seeking', () => { if (!audio.paused) setLoading(true); }
 audio.addEventListener('playing', () => setLoading(false));
 audio.addEventListener('pause',   () => setLoading(false));
 audio.addEventListener('error',   () => setLoading(false));
-audio.addEventListener('seeked',  () => { if (audio.paused) setLoading(false); });
+audio.addEventListener('seeked',  () => setLoading(false));   /* 이동이 끝나면 해제. 실제로 데이터가 부족하면 'waiting'이 다시 켬 */
+audio.addEventListener('canplay', () => { if (!audio.paused) setLoading(false); });
+/* 안전장치: 재생 위치가 실제로 앞으로 가고 있으면 무조건 해제
+   (반복 재생으로 처음에 돌아갈 때처럼 'playing' 신호가 오지 않는 경우 대비) */
+let lastT = -1;
+audio.addEventListener('timeupdate', () => {
+  if (!audio.paused && audio.currentTime !== lastT && lastT >= 0) setLoading(false);
+  lastT = audio.currentTime;
+});
 
 /* 재생·일시정지 */
 pp.addEventListener('click', () => {
